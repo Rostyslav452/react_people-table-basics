@@ -4,6 +4,17 @@ import { Link, useParams } from 'react-router-dom';
 import { Person } from '../../types';
 import classNames from 'classnames';
 
+export const PersonLink = ({ person }: { person: Person }) => (
+  <Link
+    to={`/people/${person.slug}`}
+    className={classNames({
+      'has-text-danger': person.sex === 'f',
+    })}
+  >
+    {person.name}
+  </Link>
+);
+
 export const PeoplePage = () => {
   const [people, setPeople] = useState<Person[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -28,9 +39,10 @@ export const PeoplePage = () => {
             throw new Error('Server error');
           }
 
-          const data = await response.json();
+          const text = await response.text();
+          const data = text ? JSON.parse(text) : [];
 
-          setPeople(data);
+          setPeople(Array.isArray(data) ? data : []);
           setIsLoaded(true);
         } catch (error) {
           setIsError(true);
@@ -96,14 +108,7 @@ export const PeoplePage = () => {
                         })}
                       >
                         <td>
-                          <Link
-                            to={`/people/${person.slug}`}
-                            className={classNames({
-                              'has-text-danger': person.sex === 'f',
-                            })}
-                          >
-                            {person.name}
-                          </Link>
+                          <PersonLink person={person}></PersonLink>
                         </td>
 
                         <td>{person.sex}</td>
@@ -111,12 +116,7 @@ export const PeoplePage = () => {
                         <td>{person.died}</td>
                         <td>
                           {mother ? (
-                            <Link
-                              to={`/people/${mother.slug}`}
-                              className="has-text-danger"
-                            >
-                              {person.motherName}
-                            </Link>
+                            <PersonLink person={mother}></PersonLink>
                           ) : person.motherName ? (
                             person.motherName
                           ) : (
@@ -125,9 +125,7 @@ export const PeoplePage = () => {
                         </td>
                         <td>
                           {father ? (
-                            <Link to={`/people/${father.slug}`}>
-                              {person.fatherName}
-                            </Link>
+                            <PersonLink person={father}></PersonLink>
                           ) : person.fatherName ? (
                             person.fatherName
                           ) : (
